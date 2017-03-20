@@ -23,6 +23,7 @@ class MessagesController < ApplicationController
       if !current_user && @message.username.present?
         sign_in!(@message.username)
       end
+      ActionCable.server.broadcast("room_#{params[:room_id]}", html: render_message(@message))
     end
 
     respond_to do |format|
@@ -46,5 +47,9 @@ class MessagesController < ApplicationController
 
   def message_params
     params.require(:message).permit(:body, :username)
+  end
+
+  def render_message(message)
+    ApplicationController.render partial: 'messages/message', locals: {message: message}
   end
 end
