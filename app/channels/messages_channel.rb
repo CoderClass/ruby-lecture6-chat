@@ -1,16 +1,12 @@
 class MessagesChannel < ApplicationCable::Channel
   def subscribed
     # stream_from "some_channel"
-    stream_from "room_#{params[:room_id]}"
+    stream_from stream_name
     Rails.logger.info "subscribed: #{params.inspect}"
   end
 
   def unsubscribed
     # Any cleanup needed when channel is unsubscribed
-  end
-
-  def say_hi
-    ActionCable.server.broadcast("room", "Hello")
   end
 
   def create_message(message_params)
@@ -28,18 +24,22 @@ class MessagesChannel < ApplicationCable::Channel
       data[:html] = "Error: #{@message.errors.full_messages.to_sentence}"
     end
 
-    ActionCable.server.broadcast("room", data)
+    ActionCable.server.broadcast(stream_name, data)
   end
 
-  def delete_message(params)
-    Rails.logger.info "delete_message: #{params}"
-    @message = Message.find(params['id'])
+  def delete_message(data)
+    Rails.logger.info "delete_message: #{data}"
+    @message = Message.find(data['id'])
     @message.destroy
 
-    ActionCable.server.broadcast("room", {deletedId: @message.id})
+    ActionCable.server.broadcast(stream_name, {deletedId: @message.id})
   end
 
   def render_message(message)
     ApplicationController.render partial: 'messages/message', locals: {message: message}
+  end
+
+  def stream_name
+    "room_#{params[:room_id]}"
   end
 end

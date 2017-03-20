@@ -1,6 +1,11 @@
 <h1>Room: <%= @room.name %></h1>
 
-<input type="text" name="message_body" id="message-body" value="" placeholder="Chat message" />
+<div class="card card-block mb-2">
+  <label>
+    Post by WebSocket
+    <input type="text" name="message_body" id="message-body" value="" placeholder="Chat message" class="form-control" />
+  </label>
+</div>
 
 <%= form_for [@room, @message = Message.new(username: current_user.try(:username))], remote: !!current_user do |f|  %>
   <div class="card card-block card-inverse card-info">
